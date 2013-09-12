@@ -28,7 +28,7 @@ class HippyBot(JabberBot):
     """
 
     _content_commands = {}
-    _global_commands = []
+    _global_commands = ['help']
     _command_aliases = {}
     _all_msg_handlers = []
     _last_message = ''
@@ -110,7 +110,7 @@ class HippyBot(JabberBot):
         to = True
         if (respond_to_all and mess.startswith('@all ')):
             mess = mess[5:]
-        elif mess.startswith(self._at_short_name):
+        elif mess.lower().startswith(self._at_short_name):
             mess = mess[len(self._at_short_name):]
         elif mess.lower().startswith(self._at_name.lower()):
             mess = mess[len(self._at_name):]
@@ -315,6 +315,57 @@ class HippyBot(JabberBot):
                 self._api = HipChatApi(
                     auth_token=auth_token, api_server=api_server)
         return self._api
+
+    def top_of_help_message(self):
+        """Returns a string that forms the top of the help message
+
+        Override this method in derived class if you
+        want to add additional help text at the
+        beginning of the help message.
+        """
+        return self._config.get("help",{}).get("top", "")
+
+
+    def bottom_of_help_message(self):
+        """Returns a string that forms the bottom of the help message
+
+        Override this method in derived class if you
+        want to add additional help text at the end
+        of the help message.
+        """
+        return self._config.get("help",{}).get("bottom", "")
+
+    @botcmd
+    def help(self, mess, args):
+        """Returns a help string listing available options.
+
+        Automatically assigned to the "help" command."""
+        if not args:
+            description = 'Available commands:'
+            def get_command_string(command):
+                return '%s: %s' % (name, (command.__doc__ or '(undocumented)').split('\n', 1)[0])
+
+            commands = []
+            for (name, command) in self.commands.items():
+                if name == 'help':
+                    continue
+                if command._jabberbot_command_hidden or name not in self._global_commands:
+                    continue
+                commands.append(get_command_string(command))
+            usage = '\n'.join(commands) + '\n\nType help <command name> to get more info about that specific command.'
+        else:
+            description = ''
+            if args in self.commands:
+                usage = self.commands[args].__doc__ or 'undocumented'
+            else:
+                usage = 'That command is not defined.'
+
+        top    = self.top_of_help_message()
+        bottom = self.bottom_of_help_message()
+        if top   : top    = "%s\n\n" % top
+        if bottom: bottom = "\n\n%s" % bottom
+
+        return '%s%s\n\n%s%s' % ( top, description, usage, bottom )
 
 
 class HippyDaemon(Daemon):

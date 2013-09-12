@@ -25,3 +25,6 @@ load_path = /absolute/path/plugins
 api_server = api.hipchat.com
 api_auth_token = xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 respond_to_all = true
+[help]
+top = I am the top of the help message.
+bottom = I am the bottom of the help message.
