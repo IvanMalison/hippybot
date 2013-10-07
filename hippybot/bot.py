@@ -137,6 +137,11 @@ class HippyBot(JabberBot):
 
         at_msg, message = self.to_bot(message)
 
+        # Infi-loop reduction. I don't see why you would want the bot
+        # responding to itself in a content command.
+        if self.from_bot(mess):
+            return
+
         if len(self._all_msg_handlers) > 0:
             for handler in self._all_msg_handlers:
                 try:
