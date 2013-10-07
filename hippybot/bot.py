@@ -132,7 +132,7 @@ class HippyBot(JabberBot):
         """
         self.log.debug("Message: %s" % mess)
         message = unicode(mess.getBody()).strip()
-        if not message:
+        if not (mess.getBody() and message):
             return
 
         at_msg, message = self.to_bot(message)
