@@ -6,10 +6,13 @@ except ImportError:
 
 GETS = {
     'rooms': (
-        'history', 'list', 'show'
+        'history', 'list', 'show',
     ),
     'users': (
         'list', 'show'
+    ),
+    'v2': (
+        'room',
     )
 }
 
@@ -22,8 +25,10 @@ POSTS = {
     )
 }
 
-API_VERSION = '1'
-BASE_URL = 'https://%(api_server)s/v%(version)s/%(section)s/%(method)s'
+DEFAULT_V2_NAME = 'v2'
+DEFAULT_API_VERSION = '1'
+DEFAULT_BASE_URL = 'https://%(api_server)s/v%(version)s/%(section)s/%(method)s'
+BASE_URL_V2 = 'https://api.hipchat.com/v%(version)s/%(method)s'
 
 
 class HipChatApi(object):
@@ -31,7 +36,7 @@ class HipChatApi(object):
     """
 
     def __init__(self, auth_token, name=None, gets=GETS, posts=POSTS,
-                 base_url=BASE_URL, api_version=API_VERSION,
+                 base_url=DEFAULT_BASE_URL, api_version=DEFAULT_API_VERSION,
                  api_server='api.hipchat.com'):
         self._auth_token = auth_token
         self._name = name
@@ -40,6 +45,10 @@ class HipChatApi(object):
         self._base_url = base_url
         self._api_version = api_version
         self._api_server = api_server
+        if (self._base_url is DEFAULT_BASE_URL and
+                self._api_version is not DEFAULT_API_VERSION):
+            self._base_url = BASE_URL_V2
+            self._name = DEFAULT_V2_NAME
 
     def _request(self, method, params={}):
         if 'auth_token' not in params:
